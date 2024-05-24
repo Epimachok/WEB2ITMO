@@ -2,9 +2,9 @@ package org.mainpack;
 import beans.AnswerBean;
 import beans.Tablebean;
 
-import jakart.servlet.ServletContext;
-import jakart.servlet.ServletException;
-import jakart.servlet.http.HttpServlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
