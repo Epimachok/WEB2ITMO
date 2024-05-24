@@ -1,0 +1,42 @@
+body {
+    height: 60vh;
+    width: 60vw;
+    background-color: rgba(159, 26, 241, 0.8);
+    font-style: normal;
+    font-size: 19px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+#header {
+    font: 17px/20px monospace;
+    color: rgba(0, 0, 0, 0.8);
+    position: fixed;
+    top: 10px;
+    right: 5%;
+    background-color: rgba(184, 0, 109, 0.6);
+    line-height: 0.5;
+}
+
+.content{
+    font-size: 16px;
+}
+
+tr .author{
+    font-style: italic;
+    margin: 20px;
+    border-width: 5px;
+    border-color: black;
+    border-style: outset;
+    position: relative;
+    left: 50%;
+    width: 80%;
+}
+
+.resul-table td{
+    border: 3px;
+    border-style: outset;
+    width: 10%;
+
+}
