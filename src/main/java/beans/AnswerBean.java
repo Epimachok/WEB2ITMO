@@ -1,12 +1,18 @@
 package beans;
 
 import java.io.Serializable;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class AnswerBean implements Serializable {
+
+    private Locale locale = new Locale("en");
+    private ResourceBundle messages = ResourceBundle.getBundle("messages", locale);
+
     private float x = -10;
     private float y = -10;
     private float r = -10;
-    private String ans = "Not Good";
+    private String ans = messages.getString("ans_not_good");
     public AnswerBean(){
     }
 

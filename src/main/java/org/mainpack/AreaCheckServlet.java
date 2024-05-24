@@ -2,14 +2,16 @@ package org.mainpack;
 import beans.AnswerBean;
 import beans.Tablebean;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class AreaCheckServlet extends HttpServlet{
     public AnswerBean ansbean = new AnswerBean();
@@ -19,6 +21,9 @@ public class AreaCheckServlet extends HttpServlet{
         String X =  request.getParameter("x");
         String Y = request.getParameter("y");
         String R = request.getParameter("r");
+
+        Locale locale = new Locale("en", "US");
+        ResourceBundle messages = ResourceBundle.getBundle("messages", locale);
 
         if (X!=null && Y!=null && R!=null){
             try {
@@ -33,14 +38,14 @@ public class AreaCheckServlet extends HttpServlet{
                     tablebean.addR(r);
                     tablebean.addY(y);
                     if (checkArea(x,y,r)) {
-                        ansbean.setAns("Hit");
-                        tablebean.addAns("Hit");
+                        ansbean.setAns(messages.getString("ans_hit"));
+                        tablebean.addAns(messages.getString("ans_hit"));
                     }else{
-                        ansbean.setAns("Miss");
-                        tablebean.addAns("Miss");
+                        ansbean.setAns(messages.getString("ans_miss"));
+                        tablebean.addAns(messages.getString("ans_miss"));
                     }
                 } else {
-                    ansbean.setAns("Bad coordinates");
+                    ansbean.setAns(messages.getString("ans_bad"));
                 }
             } catch (NumberFormatException e) {
                 throw new RuntimeException(e);
@@ -57,7 +62,7 @@ public class AreaCheckServlet extends HttpServlet{
     private boolean checkData(float x, float y, float r){
         return -3 <= x && x <= 5 && -5 <= y && y <= 5 && 1 <= r && r <= 5;
     }
-    private boolean checkArea(float x, float y, float r){
+    public boolean checkArea(float x, float y, float r){
         if (x>0 && y>0){
             return false;
         } else if (x<=0 && y>=0) {
