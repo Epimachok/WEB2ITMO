@@ -170,49 +170,51 @@
 
 
 
-<target name="history">
-        <property name="git.revision" value="HEAD"/>
-        <property name="first.revision.reached" value="false"/>
+    <target name="history">
+        <exec executable="git" outputproperty="current.revision" failonerror="false">
+            <arg value="rev-parse"/>
+            <arg value="HEAD"/>
+        </exec>
 
-        <condition property="git.revision" value="HEAD~1">
-            <not>
-                <equals arg1="${git.revision}" arg2="HEAD"/>
-            </not>
-        </condition>
+        <property name="previous.revision" value="HEAD"/>
+        <property name="found.working.revision" value="false"/>
 
-        <target name="try-compile" depends="compile" if="git.revision">
-            <fail message="Compilation failed, reverting to previous revision."/>
-        </target>
+        <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+            <classpath>
+                <pathelement location="${lib.dir}/ant-contrib.jar"/>
+            </classpath>
+        </taskdef>
 
-        <target name="revert-revision" if="git.revision" unless="first.revision.reached">
-            <exec executable="git" failonerror="false">
-                <arg value="checkout"/>
-                <arg value="${git.revision}"/>
-            </exec>
+        <foreach list="${previous.revision}" param="revision" target="find-working-revision">
+            <param name="revision" value="${previous.revision}"/>
+        </foreach>
+    </target>
 
-            <exec executable="git" failonerror="false" outputproperty="git.log">
-                <arg value="log"/>
-                <arg value="--pretty=format:%H"/>
-                <arg value="-n"/>
-                <arg value="1"/>
-            </exec>
+    <target name="find-working-revision">
+        <exec executable="git" failonerror="false">
+            <arg value="checkout"/>
+            <arg value="${revision}"/>
+        </exec>
 
-            <propertyregex property="git.revision" input="${git.log}" regexp="(.*)" select="1"/>
-        </target>
-
-        <target name="diff-if-first-revision" if="first.revision.reached">
-            <exec executable="git" failonerror="false">
-                <arg value="diff"/>
-                <arg value="${git.revision}~1"/>
-                <arg value="${git.revision}"/>
-                <arg value=">"/>
-                <arg value="diff_result.txt"/>
-            </exec>
-        </target>
-
-        <target name="history-loop" depends="try-compile,revert-revision,diff-if-first-revision" unless="compile.success">
-            <antcall target="history"/>
-        </target>
+        <trycatch>
+            <try>
+                <antcall target="compile"/>
+                <echo>Found working revision: ${revision}</echo>
+                <exec executable="git" output="${build.dir}/diff.txt" failonerror="false">
+                    <arg value="diff"/>
+                    <arg value="${revision}~1"/>
+                    <arg value="${current.revision}"/>
+                </exec>
+                <exec executable="git" failonerror="false">
+                    <arg value="checkout"/>
+                    <arg value="${current.revision}"/>
+                </exec>
+                <fail message="Compilation fixed. Please check diff.txt for changes."/>
+            </try>
+            <catch>
+                <echo>Compilation failed on revision: ${revision}. Checking previous revision...</echo>
+            </catch>
+        </trycatch>
     </target>
 
 
