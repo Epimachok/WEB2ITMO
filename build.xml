@@ -168,16 +168,34 @@
     </target>
 
 
-
+<target name="try-compile">
+        <sequential>
+            <antcall target="compile"/>
+            <condition property="compile.success" value="true">
+                <available file="${classes.dir}/org/mainpack/AreaCheckServlet.class"/>
+            </condition>
+            <fail message="Compilation failed." unless="compile.success"/>
+        </sequential>
+    </target>
 
     <target name="history">
+        <!-- Get current revision -->
         <exec executable="git" outputproperty="current.revision" failonerror="false">
             <arg value="rev-parse"/>
+            <arg value="--short"/>
             <arg value="HEAD"/>
         </exec>
 
+        <!-- Initialize previous.revision with current revision -->
         <property name="previous.revision" value="HEAD"/>
         <property name="found.working.revision" value="false"/>
+
+        <!-- Fetch all revisions starting from HEAD and split them into a property -->
+        <exec executable="git" outputproperty="revisions.list" failonerror="false">
+            <arg value="rev-list"/>
+            <arg value="--abbrev-commit"/>
+            <arg value="HEAD"/>
+        </exec>
 
         <taskdef resource="net/sf/antcontrib/antcontrib.properties">
             <classpath>
@@ -185,12 +203,29 @@
             </classpath>
         </taskdef>
 
-        <foreach list="${previous.revision}" param="revision" target="find-working-revision">
-            <param name="revision" value="${previous.revision}"/>
-        </foreach>
+        <!-- Convert multiline string into a list by replacing newlines with commas -->
+        <propertyregex property="revisions.list.comma" override="yes" input="${revisions.list}" regexp="\n" replace=","/>
+
+        <!-- Iterate over each revision -->
+        <foreach list="${revisions.list.comma}" delimiter="," param="revision" target="find-working-revision"/>
     </target>
 
     <target name="find-working-revision">
+        <echo message="Checking revision: ${revision}"/>
+        
+        <!-- Check if the revision exists -->
+        <exec executable="git" outputproperty="revision.exists" failonerror="false">
+            <arg value="cat-file"/>
+            <arg value="-e"/>
+            <arg value="${revision}"/>
+        </exec>
+
+        <condition property="revision.exists" value="true">
+            <isset property="revision.exists"/>
+        </condition>
+
+        <fail message="Revision ${revision} does not exist." unless="revision.exists"/>
+
         <exec executable="git" failonerror="false">
             <arg value="checkout"/>
             <arg value="${revision}"/>
@@ -198,8 +233,8 @@
 
         <trycatch>
             <try>
-                <antcall target="compile"/>
-                <echo>Found working revision: ${revision}</echo>
+                <antcall target="try-compile"/>
+                <echo message="Found working revision: ${revision}"/>
                 <exec executable="git" output="${build.dir}/diff.txt" failonerror="false">
                     <arg value="diff"/>
                     <arg value="${revision}~1"/>
@@ -212,10 +247,18 @@
                 <fail message="Compilation fixed. Please check diff.txt for changes."/>
             </try>
             <catch>
-                <echo>Compilation failed on revision: ${revision}. Checking previous revision...</echo>
+                <echo message="Compilation failed on revision: ${revision}. Checking previous revision..."/>
+                <!-- Update previous.revision for the next iteration -->
+                <exec executable="git" outputproperty="previous.revision" failonerror="false">
+                    <arg value="rev-parse"/>
+                    <arg value="--short"/>
+                    <arg value="${revision}~1"/>
+                </exec>
             </catch>
         </trycatch>
     </target>
+
+
 
 
 
