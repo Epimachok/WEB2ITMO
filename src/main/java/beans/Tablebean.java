@@ -7,6 +7,9 @@ public class Tablebean implements Serializable {
     private ArrayList<Float> x = new ArrayList<>();
     private ArrayList<Float> y = new ArrayList<>();
     private ArrayList<Float> r = new ArrayList<>();
+
+
+    
     private ArrayList<String> Ans = new ArrayList<>();
     public Tablebean(){}
 

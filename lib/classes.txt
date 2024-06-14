@@ -1,1 +1,1 @@
-com.worthant.jsfgraph.CoordinateHandlerBean
+src/main/java/org/mainpack/AreaCheckServlet.java

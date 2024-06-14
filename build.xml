@@ -242,7 +242,7 @@
                 </exec>
                 <exec executable="git" failonerror="false">
                     <arg value="checkout"/>
-                    <arg value="${HEAD}"/>
+                    <arg value="master"/>
                 </exec>
                 <script language="javascript">
                 java.lang.System.exit(0);
@@ -260,43 +260,69 @@
         </trycatch>
     </target>
 
+<!-- Alternative version of the project -->
+    <target name="alt" depends="build">
+        <unwar src="${build.dir}/${ant.project.name}.war" dest="${build.dir}/alt-src">
+            <patternset>
+                <include name="**/*" />
+            </patternset>
+        </unwar>
 
+        <replace dir="${build.dir}/alt-src">
+            <include name="**/*.java" />
+            <replacefilter token="variableName" value="alternativeVariableName" />
+            <replacefilter token="ClassName" value="AlternativeClassName" />
+        </replace>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <target name="build-revision">
-        <property name="link" value="${link}"/>
-
-        <exec executable="git" outputproperty="revision">
-            <arg value="rev-parse"/>
-            <arg value="${link}"/>
-        </exec>
-
-        <exec executable="git">
-            <arg value="checkout"/>
-            <arg value="${revision}"/>
-        </exec>
-
-        <antcall target="build"/>
-
-        <copy todir="${team.build.dir}/${revision}">
-            <fileset dir="${build.dir}" includes="*.jar"/>
-            <fileset dir="${build.dir}" includes="*.war"/>
-        </copy>
+        <war destfile="${build.dir}/${ant.project.name}-alt.war" webxml="${build.web.xml}">
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0"/>
+                <attribute name="Version" value="1.0-SNAPSHOT-ALT"/>
+            </manifest>
+            <fileset dir="${build.dir}/alt-src">
+                <include name="**/*" />
+                <exclude name="**/WEB-INF/web.xml" />
+            </fileset>
+        </war>
     </target>
+
+        <!-- Check special classes -->
+    <target name="diff">
+        <exec executable="git" outputproperty="git.status" failonerror="true">
+            <arg value="status"/>
+            <arg value="--porcelain"/>
+        </exec>
+
+        <loadfile property="classes.to.check" srcFile="${lib.dir}/classes.txt">
+            <filterchain>
+                <tokenfilter delimoutput=","/>
+            </filterchain>
+        </loadfile>
+
+        <condition property="changes.detected">
+            <and>
+                <contains string="${git.status}" substring="modified"/>
+                <contains string="${git.status}" substring="${classes.to.check}"/>
+            </and>
+        </condition>
+
+        <antcall target="commit">
+            <param name="message" value="Automated commit triggered by changes in specified classes"/>
+        </antcall>
+    </target>
+
+    <target name="commit" if="changes.detected">
+        <echo message="${changes.detected}"/>
+        <exec executable="git" failonerror="true">
+            <arg value="add"/>
+            <arg value="."/>
+        </exec>
+
+        <exec executable="git" failonerror="true">
+            <arg value="commit"/>
+            <arg value="-m"/>
+            <arg value="${message}"/>
+        </exec>
+    </target>
+
 </project>
