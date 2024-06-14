@@ -299,12 +299,15 @@
             </filterchain>
         </loadfile>
 
-        <condition property="changes.detected">
+        <property name="changes.detected" value="true"/>
+
+        <condition property="changes.detected" value="false">
             <and>
                 <contains string="${git.status}" substring="modified"/>
                 <contains string="${git.status}" substring="${classes.to.check}"/>
             </and>
         </condition>
+        <echo message="${classes.to.check}"/>
 
         <antcall target="commit">
             <param name="message" value="Automated commit triggered by changes in specified classes"/>
@@ -312,7 +315,6 @@
     </target>
 
     <target name="commit" if="changes.detected">
-        <echo message="${changes.detected}"/>
         <exec executable="git" failonerror="true">
             <arg value="add"/>
             <arg value="."/>
