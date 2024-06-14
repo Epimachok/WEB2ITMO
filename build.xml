@@ -327,4 +327,51 @@
         </exec>
     </target>
 
+
+     <target name="team">
+        <exec executable="git" outputproperty="current.revision" failonerror="false">
+            <arg value="rev-parse"/>
+            <arg value="HEAD"/>
+        </exec>
+
+        <property name="revision1" value="${current.revision}~1"/>
+        <property name="revision2" value="${current.revision}~2"/>
+        <property name="revision3" value="${current.revision}~3"/>
+
+        <echo>Building revision: ${revision1}</echo>
+        <exec executable="git" failonerror="false">
+            <arg value="checkout"/>
+            <arg value="${revision1}"/>
+        </exec>
+        <antcall target="build">
+            <param name="war.name" value="${war.name}-${revision1}.war"/>
+        </antcall>
+
+        <echo>Building revision: ${revision2}</echo>
+        <exec executable="git" failonerror="false">
+            <arg value="checkout"/>
+            <arg value="${revision2}"/>
+        </exec>
+        <antcall target="build">
+            <param name="war.name" value="${war.name}-${revision2}.war"/>
+        </antcall>
+
+        <echo>Building revision: ${revision3}</echo>
+        <exec executable="git" failonerror="false">
+            <arg value="checkout"/>
+            <arg value="${revision3}"/>
+        </exec>
+        <antcall target="build">
+            <param name="war.name" value="${war.name}-${revision3}.war"/>
+        </antcall>
+
+        <zip destfile="${build.dir}/team-revisions.zip">
+            <fileset dir="${build.dir}">
+                <include name="${war.name}-${revision1}.war"/>
+                <include name="${war.name}-${revision2}.war"/>
+                <include name="${war.name}-${revision3}.war"/>
+            </fileset>
+        </zip>
+    </target>
+
 </project>
