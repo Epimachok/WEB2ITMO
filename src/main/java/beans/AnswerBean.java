@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+
+
 public class AnswerBean implements Serializable {
 
     private Locale locale = new Locale("en");
