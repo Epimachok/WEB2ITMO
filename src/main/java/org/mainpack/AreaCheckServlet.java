@@ -1,5 +1,5 @@
 package org.mainpack;
-import beans.AnswerBean-;
+import beans.AnswerBean;
 import beans.Tablebean;
 
 import jakarta.servlet.ServletContext;
